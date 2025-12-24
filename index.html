@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Rival Más Débil - Trivia</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-orange: #ff9d00;
+            --bg-dark: #0a0a12;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        h1, h2, h3, .digit-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animaciones */
+        .blink { animation: blinker 1.5s linear infinite; }
+        .blink-fast { animation: blinker 0.5s linear infinite; color: red; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .screen {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+        }
+
+        .active-screen { display: flex; }
+
+        /* Botones */
+        .btn-neon {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px var(--neon-blue);
+            box-shadow: 0 0 5px var(--neon-blue);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-neon:active {
+            background: var(--neon-blue);
+            color: black;
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #6b7280;
+            color: #9ca3af;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+        }
+        .btn-secondary:active, .btn-secondary:hover {
+            border-color: white;
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn-toggle {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .btn-toggle.active {
+            border-color: var(--neon-blue);
+            background-color: rgba(0, 243, 255, 0.1);
+            color: var(--neon-blue);
+        }
+
+        .btn-danger {
+            border-color: #ff3333;
+            color: #ff3333;
+            text-shadow: 0 0 5px #ff3333;
+            box-shadow: 0 0 5px #ff3333;
+        }
+        .btn-danger:active { background: #ff3333; color: white; }
+
+        .btn-success {
+            border-color: #33ff33;
+            color: #33ff33;
+            text-shadow: 0 0 5px #33ff33;
+            box-shadow: 0 0 5px #33ff33;
+        }
+        .btn-success:active { background: #33ff33; color: black; }
+
+        .logo-glow { filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.5)); }
+
+    </style>
+</head>
+<body class="text-size-md" id="app-body">
+
+    <!-- AUDIO ELEMENTS -->
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/nsanchezBG/STWProject/235b9ff6c5817c2c644cb6e4d68bfe67ac1b5387/dark-horizon-suspense-build-up-music-copyright-free-music-413973.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 1. SPLASH SCREEN -->
+    <div id="screen-splash" class="screen active-screen cursor-pointer" onclick="app.startApp()">
+        <div class="text-center flex flex-col items-center justify-center h-full">
+            <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-80 md:w-[32rem] mb-12 logo-glow animate-pulse object-contain">
+            <div class="mt-4">
+                <p class="text-lg md:text-xl blink text-orange-400 font-bold tracking-wide">TOCA PARA EMPEZAR</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN MENU -->
+    <div id="screen-home" class="screen">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-48 mb-12 logo-glow">
+        
+        <button onclick="app.goToSetup()" class="btn-neon px-12 py-6 text-2xl font-bold rounded-full mb-8 w-64 uppercase">
+            Partida Nueva
+        </button>
+
+        <button onclick="app.goToSettings()" class="text-gray-500 hover:text-white transition text-4xl mt-8 p-4">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </div>
+
+    <!-- 3. SETUP SCREEN -->
+    <div id="screen-setup" class="screen">
+        <div class="absolute top-4 left-0 w-full flex justify-center opacity-50">
+            <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-16">
+        </div>
+
+        <h2 class="text-3xl text-cyan-300 mb-6 mt-8">CONFIGURACIÓN</h2>
+        
+        <div class="w-full max-w-md bg-gray-900 p-6 rounded-lg border border-gray-700 shadow-lg mb-4 h-64 overflow-y-auto">
+            <label class="block text-gray-400 mb-2">JUGADORES</label>
+            <div id="players-input-container" class="space-y-3">
+                <input type="text" placeholder="Nombre Jugador 1" class="player-input w-full bg-gray-800 border border-gray-600 text-white p-3 rounded focus:outline-none focus:border-cyan-400 uppercase">
+                <input type="text" placeholder="Nombre Jugador 2" class="player-input w-full bg-gray-800 border border-gray-600 text-white p-3 rounded focus:outline-none focus:border-cyan-400 uppercase">
+            </div>
+            <button onclick="app.addPlayerInput()" class="mt-4 w-full py-2 border border-dashed border-gray-500 text-gray-400 hover:text-white hover:border-white rounded transition">
+                <i class="fa-solid fa-plus"></i> Agregar Jugador
+            </button>
+        </div>
+
+        <div class="w-full max-w-md mb-8">
+            <label class="block text-gray-400 mb-2 text-center">TIEMPO DE RONDA</label>
+            <div class="flex justify-center items-center space-x-4">
+                <button onclick="app.adjustTime(-10)" class="text-2xl text-cyan-400 p-2"><i class="fa-solid fa-minus"></i></button>
+                <span id="setup-time-display" class="text-4xl font-bold digit-font text-orange-400">120</span>
+                <button onclick="app.adjustTime(10)" class="text-2xl text-cyan-400 p-2"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>
+
+        <button onclick="app.startGameSequence()" class="btn-neon px-12 py-4 text-xl font-bold rounded w-full max-w-md uppercase">
+            JUGAR
+        </button>
+        
+        <button onclick="app.showScreen('screen-home')" class="btn-secondary mt-6 px-8 py-2 rounded">
+            Volver
+        </button>
+    </div>
+
+    <!-- 4. PRE-ROUND SCREEN -->
+    <div id="screen-preround" class="screen cursor-pointer" onclick="app.startRoundTimer()">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-20 mb-6 opacity-80">
+        
+        <div class="text-center">
+            <div class="digit-font text-6xl text-orange-500 mb-8" id="preround-timer">120</div>
+            <h3 class="text-gray-400 text-xl">EMPIEZA:</h3>
+            <h2 class="text-4xl text-white font-bold my-4 uppercase" id="preround-player-name">NOMBRE</h2>
+            <div class="mt-12">
+                <p class="text-3xl blink text-cyan-400 font-bold">TOCA PARA EMPEZAR</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5, 6, 7. GAME SCREEN -->
+    <div id="screen-game" class="screen">
+        <div class="w-full flex justify-between items-center absolute top-4 px-4 z-10">
+            <div class="text-xl text-gray-400 uppercase w-1/3 truncate" id="game-player-name">JUGADOR</div>
+            <div class="w-1/3 flex justify-center">
+                 <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-12 md:w-16 opacity-60">
+            </div>
+            <div class="w-1/3 text-right text-gray-500 text-sm">Ronda <span id="round-number">1</span></div>
+        </div>
+
+        <div class="digit-font text-5xl text-orange-500 text-center mt-16 mb-4" id="game-timer">120</div>
+
+        <div id="question-area" class="w-full max-w-2xl text-center cursor-pointer" onclick="app.revealAnswer()">
+            <div class="mb-4 text-gray-500 text-sm tracking-widest">PREGUNTA</div>
+            <h2 id="question-text" class="text-3xl md:text-4xl font-bold leading-tight mb-8 px-2">¿Cargando?</h2>
+            <div id="tap-reveal-hint" class="text-gray-600 animate-pulse text-sm">(Toca para ver respuesta)</div>
+        </div>
+
+        <div id="answer-area" class="hidden flex-col items-center w-full max-w-2xl mt-4">
+            <div class="w-full border-t border-gray-700 my-4"></div>
+            <div class="text-green-400 text-sm tracking-widest mb-1">RESPUESTA</div>
+            <h3 id="answer-text" class="text-2xl font-bold text-white mb-8">Respuesta</h3>
+            
+            <div class="flex space-x-8">
+                <button onclick="app.submitResult(false)" class="btn-danger rounded-full w-24 h-24 text-4xl flex items-center justify-center transition hover:bg-red-900">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <button onclick="app.submitResult(true)" class="btn-success rounded-full w-24 h-24 text-4xl flex items-center justify-center transition hover:bg-green-900">
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. TIME'S UP OVERLAY -->
+    <div id="screen-times-up" class="screen" style="background: rgba(10,10,20,0.98); z-index: 100;">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-24 mb-6 opacity-40">
+        <h1 class="text-6xl text-red-500 font-bold mb-2 blink-fast">¡TIEMPO!</h1>
+        <h2 class="text-xl text-gray-300 mb-6">RESULTADOS</h2>
+        <div class="w-full max-w-lg bg-gray-900 p-4 rounded h-64 overflow-y-auto mb-6" id="round-results-list"></div>
+        <div class="cursor-pointer mt-4" onclick="app.showRoundDecisions()">
+            <p class="text-2xl blink text-cyan-400 font-bold">AVANZAR >></p>
+        </div>
+    </div>
+
+    <!-- 9. ROUND DECISION -->
+    <div id="screen-decision" class="screen">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-20 mb-8 opacity-50">
+        <h2 class="text-3xl mb-12">¿QUÉ HACEMOS?</h2>
+        <button onclick="app.processElimination()" class="btn-neon px-8 py-4 text-xl font-bold rounded mb-6 w-64">CONTINUAR</button>
+        <button onclick="app.goToSetup()" class="btn-secondary px-8 py-4 rounded w-64">EMPEZAR JUEGO NUEVO</button>
+    </div>
+
+    <!-- 10. TIE BREAKER -->
+    <div id="screen-tiebreaker" class="screen">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-16 mb-4 opacity-40">
+        <h2 class="text-2xl text-orange-400 mb-2">EMPATE</h2>
+        <h3 class="text-xl text-gray-400 mb-8">Elige a quién descartar:</h3>
+        <div id="tie-buttons-container" class="flex flex-col space-y-4 w-full max-w-md"></div>
+    </div>
+
+    <!-- 12. WINNER SCREEN -->
+    <div id="screen-winner" class="screen">
+        <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-32 mb-8 logo-glow">
+        <h3 class="text-xl text-gray-500 mb-4">EL RIVAL MÁS FUERTE FUE:</h3>
+        <h1 id="winner-name" class="text-5xl md:text-7xl text-cyan-400 font-bold mb-12 text-center text-shadow-glow">NOMBRE</h1>
+        <button onclick="app.showScreen('screen-splash')" class="btn-neon px-8 py-3 rounded">VOLVER AL INICIO</button>
+    </div>
+
+    <!-- 13. SETTINGS -->
+    <div id="screen-settings" class="screen">
+        <div class="absolute top-4 left-0 w-full flex justify-center opacity-30">
+            <img src="https://raw.githubusercontent.com/nsanchezBG/STWProject/6c016b42e0c2d624b61b4a30cc8c99ad34dac25d/0FD2CAD6-61B5-47EC-9123-AA36F8E4E57A.png" alt="Logo" class="w-12">
+        </div>
+
+        <h2 class="text-3xl text-gray-200 mb-8"><i class="fa-solid fa-gear"></i> CONFIGURACIÓN</h2>
+        
+        <div class="w-full max-w-md space-y-4">
+            <!-- Música Switch -->
+            <button onclick="app.toggleMusic()" id="btn-music" class="btn-toggle active">
+                <span class="text-xl">MÚSICA</span>
+                <span id="status-music" class="font-bold">ENCENDIDO</span>
+            </button>
+
+            <!-- SFX Switch -->
+            <button onclick="app.toggleSFX()" id="btn-sfx" class="btn-toggle active">
+                <span class="text-xl">EFECTOS (Bips)</span>
+                <span id="status-sfx" class="font-bold">ENCENDIDO</span>
+            </button>
+
+            <!-- Separador -->
+            <div class="border-t border-gray-700 my-4"></div>
+
+            <!-- Tamaño Letra -->
+            <div>
+                <label class="block text-gray-400 mb-2">TAMAÑO DE TEXTO</label>
+                <div class="flex justify-between">
+                    <button onclick="app.setFontSize('sm')" class="p-3 border border-gray-600 rounded hover:border-cyan-400">A (Chico)</button>
+                    <button onclick="app.setFontSize('md')" class="p-3 border border-gray-600 rounded hover:border-cyan-400">A (Medio)</button>
+                    <button onclick="app.setFontSize('lg')" class="p-3 border border-gray-600 rounded hover:border-cyan-400">A (Grande)</button>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="app.showScreen('screen-home')" class="btn-secondary mt-12 px-8 py-2 rounded">
+            Volver
+        </button>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- BANCO DE PREGUNTAS (Sample) ---
+        const questionsDB = [
+            { q: "¿Cuál es la capital de Francia?", a: "París" },
+            { q: "¿En qué país se encuentra la Torre Eiffel?", a: "Francia" },
+            { q: "¿Cuál es el símbolo químico del oro?", a: "Au" },
+            { q: "¿Quién pintó la Mona Lisa?", a: "Leonardo da Vinci" },
+            { q: "¿En qué año llegó el hombre a la luna?", a: "1969" },
+            { q: "¿Cuál es el planeta más grande del sistema solar?", a: "Júpiter" },
+            { q: "¿Cuántos lados tiene un hexágono?", a: "Seis" },
+            { q: "¿Quién escribió Don Quijote?", a: "Cervantes" },
+            { q: "¿Cuál es el río más largo del mundo?", a: "Amazonas" },
+            { q: "¿En qué continente está Egipto?", a: "África" },
+            { q: "¿Cuál es el metal líquido a temperatura ambiente?", a: "Mercurio" },
+            { q: "¿Cuántos jugadores hay en un equipo de fútbol?", a: "11" },
+            { q: "¿Quién es el Rey del Pop?", a: "Michael Jackson" },
+            { q: "¿En qué país nació Adolf Hitler?", a: "Austria" },
+            { q: "¿Cuál es la capital de Italia?", a: "Roma" },
+            { q: "¿Qué gas respiramos?", a: "Oxígeno" },
+            { q: "¿Quién descubrió América?", a: "Cristóbal Colón" },
+            { q: "¿Cuál es el animal más rápido?", a: "Guepardo" },
+            { q: "¿En qué año terminó la Segunda Guerra Mundial?", a: "1945" },
+            { q: "¿Cuál es el océano más grande?", a: "Pacífico" },
+            { q: "Verdadero o Falso: Los tiburones son mamíferos.", a: "Falso" },
+            { q: "Elige: ¿Batman vive en Gotham o Metrópolis?", a: "Gotham" },
+            { q: "Elige: ¿El tomate es una fruta o una verdura?", a: "Fruta" }
+            // (Puedes volver a pegar aquí la lista completa de preguntas anterior si lo deseas)
+        ];
+
+        // --- SOUND SYSTEM ---
+        const SoundFX = {
+            ctx: null,
+            init: function() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                // Importante: Reanudar si estaba suspendido (común en Chrome)
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone: function(freq, type, duration) {
+                if (!app.sfxOn || !this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            playClick: function() { this.playTone(800, 'sine', 0.1); },
+            playReveal: function() { this.playTone(600, 'square', 0.1); },
+            playCorrect: function() { 
+                if (!app.sfxOn) return;
+                this.playTone(800, 'sine', 0.1); 
+                setTimeout(() => this.playTone(1200, 'sine', 0.2), 100);
+            },
+            playWrong: function() { 
+                if (!app.sfxOn) return;
+                this.playTone(150, 'sawtooth', 0.4); 
+            },
+            playAlarm: function() {
+                if (!app.sfxOn || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.linearRampToValueAtTime(880, now + 1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 1);
+            }
+        };
+
+        // --- APP LOGIC ---
+        const app = {
+            players: [],
+            activePlayersIndices: [],
+            currentPlayerIdx: 0,
+            currentRoundTime: 120,
+            setupTime: 120,
+            timerInterval: null,
+            timerRunning: false,
+            currentQuestion: null,
+            questionPool: [],
+            roundNumber: 1,
+            // Ajustes
+            musicOn: true,
+            sfxOn: true,
+
+            init: function() {
+                this.showScreen('screen-splash');
+                this.questionPool = [...questionsDB];
+            },
+
+            showScreen: function(screenId) {
+                document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+                document.getElementById(screenId).classList.add('active-screen');
+                SoundFX.playClick();
+            },
+
+            startApp: function() {
+                // Iniciar Audio Context al primer toque
+                SoundFX.init();
+                
+                // Iniciar música si corresponde
+                const bgMusic = document.getElementById('bg-music');
+                bgMusic.volume = 0.5;
+                if(this.musicOn) {
+                    bgMusic.play().catch(e => console.log("Audio autoplay prevented"));
+                }
+                
+                this.showScreen('screen-home');
+            },
+
+            // --- SETTINGS LOGIC ---
+            toggleMusic: function() {
+                this.musicOn = !this.musicOn;
+                const bg = document.getElementById('bg-music');
+                
+                if (this.musicOn) {
+                    bg.play();
+                } else {
+                    bg.pause();
+                }
+                this.updateSettingsUI();
+                SoundFX.playClick();
+            },
+
+            toggleSFX: function() {
+                this.sfxOn = !this.sfxOn;
+                // Intentar reanudar contexto si se enciende de nuevo
+                if(this.sfxOn) SoundFX.init();
+                
+                this.updateSettingsUI();
+                if(this.sfxOn) SoundFX.playClick();
+            },
+
+            updateSettingsUI: function() {
+                const btnMusic = document.getElementById('btn-music');
+                const statusMusic = document.getElementById('status-music');
+                const btnSfx = document.getElementById('btn-sfx');
+                const statusSfx = document.getElementById('status-sfx');
+
+                if (this.musicOn) {
+                    btnMusic.classList.add('active');
+                    statusMusic.innerText = "ENCENDIDO";
+                } else {
+                    btnMusic.classList.remove('active');
+                    statusMusic.innerText = "APAGADO";
+                }
+
+                if (this.sfxOn) {
+                    btnSfx.classList.add('active');
+                    statusSfx.innerText = "ENCENDIDO";
+                } else {
+                    btnSfx.classList.remove('active');
+                    statusSfx.innerText = "APAGADO";
+                }
+            },
+
+            goToSetup: function() { this.showScreen('screen-setup'); },
+            goToSettings: function() { 
+                this.updateSettingsUI(); 
+                this.showScreen('screen-settings'); 
+            },
+
+            addPlayerInput: function() {
+                const container = document.getElementById('players-input-container');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Nombre Jugador ${container.children.length + 1}`;
+                input.className = "player-input w-full bg-gray-800 border border-gray-600 text-white p-3 rounded focus:outline-none focus:border-cyan-400 uppercase";
+                container.appendChild(input);
+            },
+
+            adjustTime: function(amount) {
+                this.setupTime += amount;
+                if (this.setupTime < 10) this.setupTime = 10;
+                document.getElementById('setup-time-display').innerText = this.setupTime;
+            },
+
+            startGameSequence: function() {
+                const inputs = document.querySelectorAll('.player-input');
+                let tempPlayers = [];
+                inputs.forEach(input => {
+                    if (input.value.trim() !== "") {
+                        tempPlayers.push({
+                            name: input.value.trim().toUpperCase(),
+                            active: true,
+                            roundChecks: 0,
+                            roundX: 0
+                        });
+                    }
+                });
+
+                if (tempPlayers.length < 2) {
+                    alert("Se necesitan al menos 2 jugadores.");
+                    return;
+                }
+
+                this.players = tempPlayers;
+                this.updateActivePlayersList();
+                this.currentRoundTime = this.setupTime;
+                this.roundNumber = 1;
+                this.goToPreRound();
+            },
+
+            updateActivePlayersList: function() {
+                this.activePlayersIndices = this.players
+                    .map((p, index) => p.active ? index : -1)
+                    .filter(index => index !== -1);
+            },
+
+            goToPreRound: function() {
+                this.updateActivePlayersList();
+                this.currentPlayerIdx = 0;
+                const firstPlayerName = this.players[this.activePlayersIndices[0]].name;
+
+                document.getElementById('preround-timer').innerText = this.currentRoundTime;
+                document.getElementById('preround-player-name').innerText = firstPlayerName;
+                document.getElementById('round-number').innerText = this.roundNumber;
+
+                this.showScreen('screen-preround');
+            },
+
+            startRoundTimer: function() {
+                this.showScreen('screen-game');
+                this.loadNextQuestion();
+                this.timerRunning = true;
+                
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    if (this.timerRunning) {
+                        this.currentRoundTime--;
+                        this.updateTimerDisplay();
+                        
+                        if (this.currentRoundTime <= 10 && this.currentRoundTime > 0) {
+                            SoundFX.playTone(800, 'sine', 0.05);
+                        }
+
+                        if (this.currentRoundTime <= 0) {
+                            this.handleTimesUp();
+                        }
+                    }
+                }, 1000);
+            },
+
+            updateTimerDisplay: function() {
+                const timerEl = document.getElementById('game-timer');
+                timerEl.innerText = this.currentRoundTime;
+                if (this.currentRoundTime <= 10) timerEl.classList.add('text-red-500', 'blink-fast');
+                else timerEl.classList.remove('text-red-500', 'blink-fast');
+            },
+
+            loadNextQuestion: function() {
+                const actualPlayerIndex = this.activePlayersIndices[this.currentPlayerIdx];
+                document.getElementById('game-player-name').innerText = this.players[actualPlayerIndex].name;
+
+                if (this.questionPool.length === 0) this.questionPool = [...questionsDB];
+                const rIdx = Math.floor(Math.random() * this.questionPool.length);
+                this.currentQuestion = this.questionPool[rIdx];
+                
+                document.getElementById('question-text').innerText = this.currentQuestion.q;
+                document.getElementById('answer-text').innerText = this.currentQuestion.a;
+                
+                document.getElementById('question-area').style.display = 'block';
+                document.getElementById('answer-area').style.display = 'none';
+                document.getElementById('tap-reveal-hint').style.visibility = 'visible';
+
+                this.timerRunning = true;
+            },
+
+            revealAnswer: function() {
+                if (!this.timerRunning) return;
+                this.timerRunning = false;
+                SoundFX.playReveal();
+                document.getElementById('tap-reveal-hint').style.visibility = 'hidden';
+                document.getElementById('answer-area').style.display = 'flex';
+            },
+
+            submitResult: function(isCorrect) {
+                const actualPlayerIndex = this.activePlayersIndices[this.currentPlayerIdx];
+                if (isCorrect) {
+                    this.players[actualPlayerIndex].roundChecks++;
+                    SoundFX.playCorrect();
+                } else {
+                    this.players[actualPlayerIndex].roundX++;
+                    SoundFX.playWrong();
+                }
+
+                if (this.currentRoundTime <= 0) {
+                    this.handleTimesUp();
+                    return;
+                }
+
+                this.currentPlayerIdx++;
+                if (this.currentPlayerIdx >= this.activePlayersIndices.length) {
+                    this.currentPlayerIdx = 0;
+                }
+                this.loadNextQuestion();
+            },
+
+            handleTimesUp: function() {
+                clearInterval(this.timerInterval);
+                this.timerRunning = false;
+                SoundFX.playAlarm();
+                
+                const listContainer = document.getElementById('round-results-list');
+                listContainer.innerHTML = '';
+                
+                this.activePlayersIndices.forEach(idx => {
+                    const p = this.players[idx];
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center border-b border-gray-700 py-2";
+                    
+                    let icons = '';
+                    for(let i=0; i<p.roundChecks; i++) icons += '<i class="fa-solid fa-check text-green-500 mr-1 text-xs"></i>';
+                    for(let i=0; i<p.roundX; i++) icons += '<i class="fa-solid fa-xmark text-red-500 mr-1 text-xs"></i>';
+
+                    div.innerHTML = `
+                        <span class="text-white font-bold">${p.name}</span>
+                        <div class="text-right">
+                            <div class="mb-1">${icons}</div>
+                            <span class="text-xs text-gray-400">Ok: ${p.roundChecks} | Err: ${p.roundX}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+
+                this.showScreen('screen-times-up');
+            },
+
+            showRoundDecisions: function() { this.showScreen('screen-decision'); },
+
+            processElimination: function() {
+                if (this.activePlayersIndices.length === 2) {
+                    this.determineWinner();
+                    return;
+                }
+
+                let maxX = -1;
+                this.activePlayersIndices.forEach(idx => {
+                    if (this.players[idx].roundX > maxX) maxX = this.players[idx].roundX;
+                });
+
+                const candidates = this.activePlayersIndices.filter(idx => this.players[idx].roundX === maxX);
+
+                if (candidates.length === 1) {
+                    this.eliminatePlayer(candidates[0]);
+                } else {
+                    this.showTieBreaker(candidates);
+                }
+            },
+
+            showTieBreaker: function(candidateIndices) {
+                const container = document.getElementById('tie-buttons-container');
+                container.innerHTML = '';
+                candidateIndices.forEach(idx => {
+                    const btn = document.createElement('button');
+                    btn.className = "btn-danger py-4 text-xl font-bold rounded w-full uppercase";
+                    btn.innerText = `DESCARTAR A ${this.players[idx].name}`;
+                    btn.onclick = () => this.eliminatePlayer(idx);
+                    container.appendChild(btn);
+                });
+                this.showScreen('screen-tiebreaker');
+            },
+
+            eliminatePlayer: function(playerIndex) {
+                this.players[playerIndex].active = false;
+                this.players.forEach(p => { p.roundChecks = 0; p.roundX = 0; });
+                this.updateActivePlayersList();
+                this.currentRoundTime = this.setupTime;
+                this.roundNumber++;
+                this.goToPreRound();
+            },
+
+            determineWinner: function() {
+                const idx1 = this.activePlayersIndices[0];
+                const idx2 = this.activePlayersIndices[1];
+                const p1 = this.players[idx1];
+                const p2 = this.players[idx2];
+                let winnerName = "";
+                
+                if (p1.roundChecks > p2.roundChecks) winnerName = p1.name;
+                else if (p2.roundChecks > p1.roundChecks) winnerName = p2.name;
+                else {
+                    if (p1.roundX < p2.roundX) winnerName = p1.name;
+                    else if (p2.roundX < p1.roundX) winnerName = p2.name;
+                    else winnerName = "EMPATE (AMBOS SON FUERTES)";
+                }
+
+                document.getElementById('winner-name').innerText = winnerName;
+                this.showScreen('screen-winner');
+            },
+
+            setFontSize: function(size) {
+                document.body.className = '';
+                if(size === 'sm') document.body.classList.add('text-size-sm');
+                if(size === 'md') document.body.classList.add('text-size-md');
+                if(size === 'lg') document.body.classList.add('text-size-lg');
+            }
+        };
+
+        window.onload = function() { app.init(); };
+    </script>
+</body>
+</html>
